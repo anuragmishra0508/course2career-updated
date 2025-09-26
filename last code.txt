@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COURSE2CAREER - Your Personalized Education Advisor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#7C3AED',
+                        accent: '#059669',
+                        light: '#F9FAFB',
+                        dark: '#1F2937'
+                    }
+                }
+            }
+        }
+        window.jsPDF = window.jspdf.jsPDF;
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .animate-slideIn {
+            animation: slideIn 0.5s ease-out;
+        }
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            transition: width 0.3s ease;
+        }
+        .nav-link.active::after,
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .mobile-menu.open {
+            max-height: 500px;
+        }
+        .quiz-question {
+            transition: all 0.3s ease;
+        }
+        .quiz-question:hover {
+            transform: translateY(-2px);
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 1);
+        }
+        .top-recommendation {
+            border: 3px solid #4F46E5;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+        }
+        .top-recommendation-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute top-20 left-20 w-72 h-72 bg-blue-400 rounded-full opacity-10 animate-pulse-slow"></div>
+        <div class="absolute top-40 right-20 w-56 h-56 bg-purple-400 rounded-full opacity-10 animate-pulse-slow" style="animation-delay: 1s"></div>
+        <div class="absolute bottom-40 left-1/3 w-48 h-48 bg-pink-400 rounded-full opacity-10 animate-pulse-slow" style="animation-delay: 2s"></div>
+        <div class="absolute bottom-20 right-1/4 w-64 h-64 bg-indigo-400 rounded-full opacity-10 animate-pulse-slow" style="animation-delay: 3s"></div>
+    </div>
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-5">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center shadow-xl">
+                        <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">COURSE2CAREER</h1>
+                        <p class="text-sm text-gray-500 hidden md:block">Your Personalized Education Advisor</p>
+                    </div>
+                </div>
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-3">
+                    <button id="nav-home" class="nav-link group relative px-6 py-3 rounded-2xl font-medium transition-all duration-300 card-hover active">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-home text-gray-500 group-hover:text-primary"></i>
+                            <span class="font-semibold">Home</span>
+                        </div>
+                    </button>
+                    <button id="nav-courses" class="nav-link group relative px-6 py-3 rounded-2xl font-medium transition-all duration-300 card-hover">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-book text-gray-500 group-hover:text-primary"></i>
+                            <span class="font-semibold">Courses</span>
+                        </div>
+                    </button>
+                    <button id="nav-colleges" class="nav-link group relative px-6 py-3 rounded-2xl font-medium transition-all duration-300 card-hover">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-building text-gray-500 group-hover:text-primary"></i>
+                            <span class="font-semibold">Colleges</span>
+                        </div>
+                    </button>
+                    <button id="nav-resources" class="nav-link group relative px-6 py-3 rounded-2xl font-medium transition-all duration-300 card-hover">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-book-open text-gray-500 group-hover:text-primary"></i>
+                            <span class="font-semibold">Resources</span>
+                        </div>
+                    </button>
+                </nav>
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-toggle" class="p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+                <button id="new-assessment" class="hidden md:block bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-7 py-3 rounded-2xl font-bold hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    New Assessment
+                </button>
+            </div>
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="mobile-menu md:hidden py-6 border-t border-gray-200">
+                <div class="flex flex-col space-y-4">
+                    <button id="mobile-nav-home" class="nav-link-mobile flex items-center space-x-4 px-6 py-4 rounded-2xl font-medium transition-all duration-300 bg-gradient-to-r from-primary to-secondary text-white">
+                        <i class="fas fa-home"></i>
+                        <span class="font-semibold">Home</span>
+                    </button>
+                    <button id="mobile-nav-courses" class="nav-link-mobile flex items-center space-x-4 px-6 py-4 rounded-2xl font-medium transition-all duration-300 text-gray-700 hover:bg-blue-50">
+                        <i class="fas fa-book"></i>
+                        <span class="font-semibold">Courses</span>
+                    </button>
+                    <button id="mobile-nav-colleges" class="nav-link-mobile flex items-center space-x-4 px-6 py-4 rounded-2xl font-medium transition-all duration-300 text-gray-700 hover:bg-blue-50">
+                        <i class="fas fa-building"></i>
+                        <span class="font-semibold">Colleges</span>
+                    </button>
+                    <button id="mobile-nav-resources" class="nav-link-mobile flex items-center space-x-4 px-6 py-4 rounded-2xl font-medium transition-all duration-300 text-gray-700 hover:bg-blue-50">
+                        <i class="fas fa-book-open"></i>
+                        <span class="font-semibold">Resources</span>
+                    </button>
+                    <button id="mobile-new-assessment" class="flex items-center space-x-4 px-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-bold hover:from-pink-600 hover:to-rose-600 transition-all duration-300">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>New Assessment</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+        <!-- Home Page -->
+        <div id="home-page" class="animate-fadeIn">
+            <!-- Hero Section -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-2xl mb-12">
+                <div class="absolute inset-0 bg-black opacity-20"></div>
+                <div class="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full -translate-y-32 translate-x-32 blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-10 rounded-full translate-y-32 -translate-x-32 blur-3xl"></div>
+                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div class="space-y-8">
+                            <div class="space-y-4">
+                                <h1 class="text-5xl md:text-6xl font-bold text-white leading-tight">
+                                    Shape Your
+                                    <span class="block bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-pink-300">Future Today</span>
+                                </h1>
+                                <p class="text-xl text-blue-100 max-w-lg">
+                                    Discover the perfect career path with our AI-powered guidance system designed for Indian students.
+                                </p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button id="start-assessment" class="bg-white text-blue-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all shadow-xl hover:shadow-2xl flex items-center justify-center space-x-2">
+                                    <span>Start Your Journey</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                                <button class="border-2 border-white text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white hover:bg-opacity-10 transform hover:scale-105 transition-all">
+                                    Learn More
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="w-80 h-80 mx-auto bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl p-8 flex flex-col items-center justify-center border border-white border-opacity-30">
+                                <div class="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mb-6">
+                                    <i class="fas fa-user-graduate text-blue-600 text-4xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Personalized Guidance</h3>
+                                <p class="text-blue-100 text-center">AI-powered recommendations based on your interests and strengths</p>
+                            </div>
+                            <div class="absolute -top-4 -right-4 w-32 h-32 bg-yellow-400 rounded-full opacity-60 animate-pulse"></div>
+                            <div class="absolute -bottom-4 -left-4 w-24 h-24 bg-pink-400 rounded-full opacity-60 animate-pulse" style="animation-delay: 1s"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Stats Section -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+                <div class="bg-white rounded-2xl p-6 shadow-lg card-hover border border-gray-100">
+                    <div class="text-3xl font-bold text-primary mb-2">95%</div>
+                    <div class="text-gray-600 font-medium">Success Rate</div>
+                    <div class="text-sm text-gray-500 mt-1">Students find suitable career paths</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg card-hover border border-gray-100">
+                    <div class="text-3xl font-bold text-primary mb-2">500+</div>
+                    <div class="text-gray-600 font-medium">Colleges</div>
+                    <div class="text-sm text-gray-500 mt-1">Government colleges in our network</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg card-hover border border-gray-100">
+                    <div class="text-3xl font-bold text-primary mb-2">10K+</div>
+                    <div class="text-gray-600 font-medium">Students</div>
+                    <div class="text-sm text-gray-500 mt-1">Guided to better futures</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg card-hover border border-gray-100">
+                    <div class="text-3xl font-bold text-primary mb-2">200+</div>
+                    <div class="text-gray-600 font-medium">Courses</div>
+                    <div class="text-sm text-gray-500 mt-1">Degree programs available</div>
+                </div>
+            </div>
+            <!-- Features Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-100 card-hover">
+                    <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-user-check text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Interest-Based Matching</h3>
+                    <p class="text-gray-600 mb-6">Our AI analyzes your interests and strengths to recommend the perfect career path for you.</p>
+                    <button class="text-primary font-medium flex items-center hover:text-blue-700 transition-colors">
+                        Learn more
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 border border-green-100 card-hover">
+                    <div class="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-university text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">College Directory</h3>
+                    <p class="text-gray-600 mb-6">Explore government colleges near you with detailed information on courses, facilities, and admission criteria.</p>
+                    <button class="text-accent font-medium flex items-center hover:text-green-700 transition-colors">
+                        Learn more
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 border border-purple-100 card-hover">
+                    <div class="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Timeline Tracker</h3>
+                    <p class="text-gray-600 mb-6">Never miss important dates with our automated reminder system for admissions, scholarships, and exams.</p>
+                    <button class="text-secondary font-medium flex items-center hover:text-purple-700 transition-colors">
+                        Learn more
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Testimonials -->
+            <div class="bg-white rounded-3xl p-12 shadow-xl mb-12">
+                <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">What Students Say</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-gray-50 rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+                                P
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Priya Sharma</h4>
+                                <p class="text-sm text-gray-600">B.Sc. Physics at Govt. College, Shimla</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"CareerGuide helped me discover my passion for physics. I'm now pursuing my dream career!"</p>
+                        <div class="flex mt-4">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+                                R
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Rahul Verma</h4>
+                                <p class="text-sm text-gray-600">B.Com at Govt. College, Mandi</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"The personalized recommendations were spot on. I found the perfect course for my skills."</p>
+                        <div class="flex mt-4">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+                                A
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Anjali Patel</h4>
+                                <p class="text-sm text-gray-600">B.A. English at Govt. College, Dharamshala</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">"Thanks to this platform, I discovered career options I never knew existed with my degree."</p>
+                        <div class="flex mt-4">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Profile Form Page -->
+        <div id="profile-page" class="hidden animate-fadeIn">
+            <div class="bg-white rounded-3xl shadow-2xl p-10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full -translate-y-40 translate-x-40 opacity-20 animate-pulse"></div>
+                <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-pink-400 to-red-400 rounded-full translate-y-40 -translate-x-40 opacity-20 animate-pulse" style="animation-delay: 0.7s"></div>
+                <button id="back-to-home" class="back-button">
+                    <i class="fas fa-arrow-left text-gray-700"></i>
+                </button>
+                <div class="text-center mb-10 relative z-10">
+                    <div class="w-20 h-20 bg-gradient-to-r from-primary to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <i class="fas fa-user text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 mb-3">Let's Get to Know You</h3>
+                    <p class="text-gray-600 text-lg">Fill in your details to get personalized course recommendations</p>
+                </div>
+                <form id="profile-form" class="space-y-8 relative z-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" id="name" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-primary transition-all text-lg" placeholder="Enter your full name" required>
+                            <p id="name-error" class="text-red-500 text-sm mt-1 hidden">Name must be at least 2 characters</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">Age</label>
+                            <input type="number" id="age" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-primary transition-all text-lg" placeholder="Enter your age" required min="13" max="30">
+                            <p id="age-error" class="text-red-500 text-sm mt-1 hidden">Age must be between 13 and 30</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select id="gender" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-primary transition-all text-lg" required>
+                                <option value="">Select your gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <p id="gender-error" class="text-red-500 text-sm mt-1 hidden">Please select your gender</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">Education Level</label>
+                            <select id="education" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-primary transition-all text-lg" required>
+                                <option value="">Select your education level</option>
+                                <option value="class10">Class 10</option>
+                                <option value="class12">Class 12</option>
+                            </select>
+                            <p id="education-error" class="text-red-500 text-sm mt-1 hidden">Please select your education level</p>
+                        </div>
+                        <!-- 12th Stream Selection (conditionally shown) -->
+                        <div id="stream-container" class="space-y-2 md:col-span-2 hidden">
+                            <label class="block text-sm font-medium text-gray-700">12th Standard Stream</label>
+                            <select id="stream" class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-primary transition-all text-lg">
+                                <option value="">Select your stream</option>
+                                <option value="science">Science</option>
+                                <option value="commerce">Commerce</option>
+                                <option value="arts">Arts</option>
+                            </select>
+                            <p id="stream-error" class="text-red-500 text-sm mt-1 hidden">Please select your 12th standard stream</p>
+                            <p class="text-sm text-gray-500 mt-2">This helps us provide more accurate career recommendations based on your academic background.</p>
+                        </div>
+                    </div>
+                    <div class="pt-6">
+                        <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-5 px-8 rounded-2xl font-bold text-xl hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl flex items-center justify-center space-x-3">
+                            <span>Continue to Assessment</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Quiz Page -->
+        <div id="quiz-page" class="hidden animate-fadeIn">
+            <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full -translate-y-32 translate-x-32 opacity-20 animate-pulse"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-400 to-indigo-400 rounded-full translate-y-32 -translate-x-32 opacity-20 animate-pulse" style="animation-delay: 1s"></div>
+                <button id="back-to-profile" class="back-button">
+                    <i class="fas fa-arrow-left text-gray-700"></i>
+                </button>
+                <div class="text-center mb-8 relative z-10">
+                    <div class="w-20 h-20 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg transform transition-transform hover:scale-110">
+                        <i class="fas fa-question text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 mb-2">Discover Your Interests</h3>
+                    <p class="text-gray-600 text-lg">Answer all questions to help us understand your interests and strengths</p>
+                    <div class="w-96 bg-gray-200 rounded-full h-3 mx-auto mt-4">
+                        <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-3 rounded-full progress-bar" style="width: 0%"></div>
+                    </div>
+                    <p id="progress-text" class="text-gray-500 mt-2">0/10 questions answered</p>
+                </div>
+                <div id="quiz-content" class="space-y-8 relative z-10 max-h-96 overflow-y-auto">
+                    <!-- Questions dynamically inserted -->
+                </div>
+                <div id="quiz-completed" class="hidden text-center py-16 relative z-10">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+        </div>
+        <!-- Recommended Courses Page (After Quiz) -->
+        <div id="recommended-courses-page" class="hidden animate-fadeIn">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Recommended Courses for You</h2>
+                    <p class="text-xl text-gray-600">Based on your interests and 12th stream</p>
+                </div>
+                <button id="back-to-quiz-results" class="back-button">
+                    <i class="fas fa-arrow-left text-gray-700"></i>
+                </button>
+            </div>
+            <div id="recommended-courses-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+        <!-- All Courses Page (From Navigation) -->
+        <div id="all-courses-page" class="hidden animate-fadeIn">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">All Courses</h2>
+                    <p class="text-xl text-gray-600">Explore undergraduate programs by stream</p>
+                </div>
+                <button id="back-to-home-from-all-courses" class="back-button">
+                    <i class="fas fa-arrow-left text-gray-700"></i>
+                </button>
+            </div>
+            <div class="space-y-10">
+                <div>
+                    <h3 class="text-2xl font-bold text-green-600 mb-4">Science & Technology</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('BCA')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">BCA (Computer Applications)</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Programming, Databases, Web Tech</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('B.Sc Computer Science')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">B.Sc Computer Science</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Algorithms, AI, Theory</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('B.Sc Medical')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">B.Sc Medical (Botany/Zoology)</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Life Sciences, Biology</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-orange-600 mb-4">Commerce & Management</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('B.Com (Hons)')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">B.Com (Hons)</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Accounting, Taxation, Finance</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('BBA')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">BBA</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Business, Marketing, HR</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-purple-600 mb-4">Arts & Humanities</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('B.A. Psychology')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">B.A. Psychology</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Human Behavior, Mental Health</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl shadow-xl card-hover cursor-pointer" onclick="showCourseDetail('B.A. Journalism')">
+                            <div class="p-8">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">B.A. Journalism & Mass Comm</h4>
+                                <p class="text-gray-600 mb-6">3 Years | Media, Writing, Communication</p>
+                                <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Course Detail Page -->
+        <div id="course-detail-page" class="hidden animate-fadeIn">
+            <div class="bg-white rounded-3xl shadow-2xl p-8">
+                <button id="back-to-all-courses" class="back-button">
+                    <i class="fas fa-arrow-left text-gray-700"></i>
+                </button>
+                <div id="course-detail-content" class="mt-12"></div>
+            </div>
+        </div>
+        <!-- Resources Page -->
+        <div id="resources-page" class="hidden animate-fadeIn">
+            <div class="space-y-10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-4xl font-bold text-gray-900 mb-4">Learning Resources</h2>
+                        <p class="text-xl text-gray-600">Access our collection of study materials, guides, and resources to help you succeed</p>
+                    </div>
+                    <button id="back-to-home-from-resources" class="back-button">
+                        <i class="fas fa-arrow-left text-gray-700"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-3xl shadow-xl card-hover">
+                        <div class="p-8">
+                            <div class="w-16 h-16 bg-gradient-to-r from-primary to-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                                <i class="fas fa-shield-alt text-white text-2xl"></i>
+                            </div>
+                            <div class="mb-4">
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Study Material</span>
+                            </div>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4">UPSC Civil Services Exam Guide</h4>
+                            <p class="text-gray-600 mb-6 text-lg leading-relaxed">Complete guide for UPSC Civil Services Examination with syllabus, previous papers, and preparation strategy.</p>
+                            <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                Download Resource
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl shadow-xl card-hover">
+                        <div class="p-8">
+                            <div class="w-16 h-16 bg-gradient-to-r from-primary to-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                                <i class="fas fa-money-bill-wave text-white text-2xl"></i>
+                            </div>
+                            <div class="mb-4">
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Scholarship</span>
+                            </div>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4">Scholarship Opportunities 2024</h4>
+                            <p class="text-gray-600 mb-6 text-lg leading-relaxed">List of government and private scholarships available for undergraduate students in India.</p>
+                            <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                Download Resource
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl shadow-xl card-hover">
+                        <div class="p-8">
+                            <div class="w-16 h-16 bg-gradient-to-r from-primary to-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                                <i class="fas fa-briefcase text-white text-2xl"></i>
+                            </div>
+                            <div class="mb-4">
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Guide</span>
+                            </div>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4">Career Paths After Graduation</h4>
+                            <p class="text-gray-600 mb-6 text-lg leading-relaxed">Comprehensive guide on various career options available after completing your graduation degree.</p>
+                            <button class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                Download Resource
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl p-12 text-center text-white">
+                    <h3 class="text-3xl font-bold mb-4">Need More Resources?</h3>
+                    <p class="text-xl mb-8 opacity-90">We're constantly adding new materials to help you succeed in your academic journey.</p>
+                    <button class="bg-white text-green-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all shadow-xl">
+                        Request a Resource
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Colleges Page (Dynamic) -->
+        <div id="colleges-page" class="hidden animate-fadeIn">
+            <div class="space-y-10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 id="colleges-heading" class="text-4xl font-bold text-gray-900 mb-4">Government Colleges in Jammu & Kashmir</h2>
+                        <p id="colleges-subheading" class="text-xl text-gray-600">Explore colleges based on your education level</p>
+                    </div>
+                    <button id="back-to-home-from-colleges" class="back-button">
+                        <i class="fas fa-arrow-left text-gray-700"></i>
+                    </button>
+                </div>
+                <div id="colleges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Colleges dynamically inserted -->
+                </div>
+                <!-- CTA Section -->
+                <div class="bg-gradient-to-r from-primary to-secondary rounded-3xl p-12 text-center text-white">
+                    <h3 class="text-3xl font-bold mb-4">Need Help Choosing a College?</h3>
+                    <p class="text-xl mb-8 opacity-90">Our experts can help you find the perfect government college based on your preferences and location.</p>
+                    <button class="bg-white text-primary px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transform hover:scale-105 transition-all shadow-xl">
+                        Get Personalized College Recommendations
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-4 mb-6">
+                        <div class="w-14 h-14 bg-gradient-to-r from-primary to-indigo-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">COURSE2CAREER</h3>
+                    </div>
+                    <p class="text-gray-400 text-lg mb-8">
+                        Your one-stop personalized career and education advisor helping students make informed decisions for a brighter future.
+                    </p>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors transform hover:scale-110">
+                            <i class="fab fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors transform hover:scale-110">
+                            <i class="fab fa-facebook text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors transform hover:scale-110">
+                            <i class="fab fa-instagram text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-6 text-blue-400 flex items-center">
+                        <i class="fas fa-book mr-2"></i>
+                        Courses
+                    </h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Bachelor of Arts</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <span>Bachelor of Science</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+                            <span>Bachelor of Commerce</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                            <span>BBA & Management</span>
+                        </a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-6 text-green-400 flex items-center">
+                        <i class="fas fa-headset mr-2"></i>
+                        Support
+                    </h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-question-circle w-5 h-5"></i>
+                            <span>Help Center</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-envelope w-5 h-5"></i>
+                            <span>Contact Us</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-file-alt w-5 h-5"></i>
+                            <span>FAQ</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-lock w-5 h-5"></i>
+                            <span>Privacy Policy</span>
+                        </a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-6 text-purple-400 flex items-center">
+                        <i class="fas fa-book-open mr-2"></i>
+                        Resources
+                    </h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-book w-5 h-5"></i>
+                            <span>Study Materials</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-money-bill-wave w-5 h-5"></i>
+                            <span>Scholarships</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-briefcase w-5 h-5"></i>
+                            <span>Career Guides</span>
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors py-2 flex items-center space-x-3 hover:translate-x-2 transition-transform">
+                            <i class="fas fa-calendar-alt w-5 h-5"></i>
+                            <span>Exam Calendar</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <p class="text-lg text-gray-400">&copy; 2024 COURSE2CAREER. All rights reserved.</p>
+                    <div class="flex space-x-8">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-lg hover:translate-x-1 transition-transform">Terms</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-lg hover:translate-x-1 transition-transform">Privacy</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-lg hover:translate-x-1 transition-transform">Cookies</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors text-lg hover:translate-x-1 transition-transform">Accessibility</a>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">Empowering students across India with personalized career guidance for a brighter future.</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // DOM Elements
+        const homePage = document.getElementById('home-page');
+        const profilePage = document.getElementById('profile-page');
+        const quizPage = document.getElementById('quiz-page');
+        const recommendedCoursesPage = document.getElementById('recommended-courses-page');
+        const allCoursesPage = document.getElementById('all-courses-page');
+        const courseDetailPage = document.getElementById('course-detail-page');
+        const resourcesPage = document.getElementById('resources-page');
+        const collegesPage = document.getElementById('colleges-page');
+        const startAssessmentBtn = document.getElementById('start-assessment');
+        const backToHomeBtn = document.getElementById('back-to-home');
+        const backToProfileBtn = document.getElementById('back-to-profile');
+        const backToAllCoursesBtn = document.getElementById('back-to-all-courses');
+        const backToHomeFromAllCoursesBtn = document.getElementById('back-to-home-from-all-courses');
+        const backToHomeFromResourcesBtn = document.getElementById('back-to-home-from-resources');
+        const backToHomeFromCollegesBtn = document.getElementById('back-to-home-from-colleges');
+        const backToQuizResultsBtn = document.getElementById('back-to-quiz-results');
+        const newAssessmentBtn = document.getElementById('new-assessment');
+        const profileForm = document.getElementById('profile-form');
+        const quizContent = document.getElementById('quiz-content');
+        const quizCompleted = document.getElementById('quiz-completed');
+        const recommendedCoursesList = document.getElementById('recommended-courses-list');
+        const collegesGrid = document.getElementById('colleges-grid');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navHome = document.getElementById('nav-home');
+        const navCourses = document.getElementById('nav-courses');
+        const navColleges = document.getElementById('nav-colleges');
+        const navResources = document.getElementById('nav-resources');
+        const mobileNavHome = document.getElementById('mobile-nav-home');
+        const mobileNavCourses = document.getElementById('mobile-nav-courses');
+        const mobileNavColleges = document.getElementById('mobile-nav-colleges');
+        const mobileNavResources = document.getElementById('mobile-nav-resources');
+        const mobileNewAssessment = document.getElementById('mobile-new-assessment');
+        const nameInput = document.getElementById('name');
+        const ageInput = document.getElementById('age');
+        const genderInput = document.getElementById('gender');
+        const educationInput = document.getElementById('education');
+        const streamContainer = document.getElementById('stream-container');
+        const streamInput = document.getElementById('stream');
+        const nameError = document.getElementById('name-error');
+        const ageError = document.getElementById('age-error');
+        const genderError = document.getElementById('gender-error');
+        const educationError = document.getElementById('education-error');
+        const streamError = document.getElementById('stream-error');
+
+        // Course Data
+        const courseData = {
+            "BCA": {
+                stream: "science",
+                duration: "3 Years",
+                description: "A professional undergraduate program focused on computer applications, software development, and IT fundamentals.",
+                colleges: 12,
+                careerPaths: ["Software Developer", "Web Designer", "System Analyst", "IT Consultant"],
+                syllabus: ["Programming in C", "Data Structures", "DBMS", "Web Technologies", "Python", "Cloud Computing"]
+            },
+            "B.Sc Computer Science": {
+                stream: "science",
+                duration: "3 Years",
+                description: "Focuses on theoretical and practical aspects of computing, algorithms, and software systems.",
+                colleges: 8,
+                careerPaths: ["Data Scientist", "AI Engineer", "Researcher", "Cybersecurity Analyst"],
+                syllabus: ["Discrete Mathematics", "Operating Systems", "Machine Learning", "Computer Networks"]
+            },
+            "B.Sc Medical": {
+                stream: "science",
+                duration: "3 Years",
+                description: "Study of plant and animal life, ecosystems, and biological processes.",
+                colleges: 10,
+                careerPaths: ["Biologist", "Environmental Consultant", "Lab Technician", "Teacher"],
+                syllabus: ["Cell Biology", "Genetics", "Ecology", "Microbiology", "Evolution"]
+            },
+            "B.Com (Hons)": {
+                stream: "commerce",
+                duration: "3 Years",
+                description: "Advanced study in accounting, finance, taxation, and business law.",
+                colleges: 15,
+                careerPaths: ["Chartered Accountant", "Financial Analyst", "Tax Consultant", "Auditor"],
+                syllabus: ["Financial Accounting", "Corporate Law", "Income Tax", "Cost Accounting", "Business Economics"]
+            },
+            "BBA": {
+                stream: "commerce",
+                duration: "3 Years",
+                description: "Builds foundational knowledge in business management, marketing, and entrepreneurship.",
+                colleges: 14,
+                careerPaths: ["Marketing Manager", "HR Executive", "Business Analyst", "Startup Founder"],
+                syllabus: ["Principles of Management", "Marketing", "Finance", "Operations", "Business Communication"]
+            },
+            "B.A. Psychology": {
+                stream: "arts",
+                duration: "3 Years",
+                description: "Study of human behavior, mental processes, and therapeutic techniques.",
+                colleges: 7,
+                careerPaths: ["Counselor", "HR Specialist", "Researcher", "Clinical Psychologist (with further study)"],
+                syllabus: ["Cognitive Psychology", "Developmental Psychology", "Abnormal Psychology", "Statistics"]
+            },
+            "B.A. Journalism": {
+                stream: "arts",
+                duration: "3 Years",
+                description: "Trains students in media writing, reporting, digital content creation, and communication.",
+                colleges: 9,
+                careerPaths: ["Journalist", "Content Writer", "PR Specialist", "Social Media Manager"],
+                syllabus: ["Media Ethics", "Reporting", "Editing", "Digital Media", "Public Relations"]
+            }
+        };
+
+        // College Database
+        const collegeDatabase = {
+            junior: {
+                science: [
+                    { name: "Govt. Higher Secondary School, Srinagar", location: "Srinagar, J&K", subjects: ["Physics", "Chemistry", "Maths", "Biology"], cutoff: "75%", facilities: ["Science Lab", "Library", "Wi-Fi"] },
+                    { name: "Govt. Higher Secondary School, Jammu", location: "Jammu, J&K", subjects: ["Physics", "Chemistry", "Maths", "Computer Science"], cutoff: "70%", facilities: ["Lab", "Library", "Hostel"] }
+                ],
+                commerce: [
+                    { name: "Govt. Higher Secondary School for Commerce, Jammu", location: "Jammu, J&K", subjects: ["Accountancy", "Business Studies", "Economics", "Maths"], cutoff: "65%", facilities: ["Commerce Lab", "Library", "Wi-Fi"] }
+                ],
+                arts: [
+                    { name: "Govt. Higher Secondary School, Anantnag", location: "Anantnag, J&K", subjects: ["History", "Pol Science", "Geography", "Sociology"], cutoff: "60%", facilities: ["Library", "Debate Club", "Wi-Fi"] }
+                ]
+            },
+            degree: {
+                science: [
+                    { name: "Sri Pratap College, Srinagar", location: "Srinagar, J&K", courses: ["B.Sc Physics", "B.Sc Chemistry", "B.Sc Computer Science", "BCA"], cutoff: "70%", facilities: ["Research Lab", "Library", "Hostel"] },
+                    { name: "Govt. Degree College, Baramulla", location: "Baramulla, J&K", courses: ["B.Sc Botany", "B.Sc Zoology", "B.Sc IT", "B.Sc Microbiology"], cutoff: "55%", facilities: ["Labs", "Library", "Sports"] }
+                ],
+                commerce: [
+                    { name: "Govt. College of Commerce, Jammu", location: "Jammu, J&K", courses: ["B.Com", "B.Com (Hons)", "BBA", "BMS", "BAF"], cutoff: "65%", facilities: ["Commerce Lab", "Library", "Placement Cell"] }
+                ],
+                arts: [
+                    { name: "Govt. Degree College, Srinagar", location: "Srinagar, J&K", courses: ["B.A. English", "B.A. History", "B.A. Political Science", "B.A. Psychology", "B.A. Journalism"], cutoff: "45%", facilities: ["Library", "Hostel", "Wi-Fi"] }
+                ]
+            }
+        };
+
+        // Quiz Questions
+        const quizQuestions = {
+            class10: [
+                { id: 1, question: "Which subjects did you enjoy most in Class 10?", options: [
+                    { value: "science", text: "Science, Maths", category: "science" },
+                    { value: "social", text: "History, Geography", category: "arts" },
+                    { value: "maths", text: "Maths, Economics", category: "commerce" }
+                ]},
+                { id: 2, question: "What do you want to study after 10th?", options: [
+                    { value: "science", text: "Science (PCM/PCB)", category: "science" },
+                    { value: "commerce", text: "Commerce", category: "commerce" },
+                    { value: "arts", text: "Arts/Humanities", category: "arts" }
+                ]},
+                { id: 3, question: "Which career interests you most?", options: [
+                    { value: "engineer", text: "Engineer / Doctor", category: "science" },
+                    { value: "ca", text: "CA / Business", category: "commerce" },
+                    { value: "writer", text: "Writer / Teacher", category: "arts" }
+                ]},
+                { id: 4, question: "How do you prefer to learn?", options: [
+                    { value: "experiments", text: "Through experiments and labs", category: "science" },
+                    { value: "numbers", text: "Working with numbers and data", category: "commerce" },
+                    { value: "reading", text: "Reading and discussions", category: "arts" }
+                ]},
+                { id: 5, question: "What are your strengths?", options: [
+                    { value: "logical", text: "Logical thinking", category: "science" },
+                    { value: "calculations", text: "Quick calculations", category: "commerce" },
+                    { value: "creative", text: "Creative writing", category: "arts" }
+                ]},
+                { id: 6, question: "Which activity do you enjoy?", options: [
+                    { value: "coding", text: "Coding or building things", category: "science" },
+                    { value: "budgeting", text: "Managing money or budgets", category: "commerce" },
+                    { value: "debating", text: "Debating or storytelling", category: "arts" }
+                ]},
+                { id: 7, question: "What motivates you?", options: [
+                    { value: "innovation", text: "Creating new things", category: "science" },
+                    { value: "success", text: "Financial success", category: "commerce" },
+                    { value: "impact", text: "Social impact", category: "arts" }
+                ]},
+                { id: 8, question: "Which environment suits you?", options: [
+                    { value: "lab", text: "Lab or workshop", category: "science" },
+                    { value: "office", text: "Corporate office", category: "commerce" },
+                    { value: "classroom", text: "Classroom or studio", category: "arts" }
+                ]},
+                { id: 9, question: "What's your dream job?", options: [
+                    { value: "scientist", text: "Scientist / Doctor", category: "science" },
+                    { value: "entrepreneur", text: "Entrepreneur / Banker", category: "commerce" },
+                    { value: "journalist", text: "Journalist / Historian", category: "arts" }
+                ]},
+                { id: 10, question: "How do you solve problems?", options: [
+                    { value: "analyze", text: "Analyze and experiment", category: "science" },
+                    { value: "plan", text: "Plan and calculate", category: "commerce" },
+                    { value: "discuss", text: "Discuss and reflect", category: "arts" }
+                ]}
+            ],
+            class12: [
+                { id: 1, question: "Which activity excites you the most?", options: [
+                    { value: "coding", text: "Building apps or websites", category: "science" },
+                    { value: "biology_lab", text: "Studying cells or human body", category: "science" },
+                    { value: "stock_market", text: "Tracking stock prices or budgets", category: "commerce" },
+                    { value: "writing_stories", text: "Writing stories or articles", category: "arts" }
+                ]},
+                { id: 2, question: "Which subject did you enjoy most in 12th?", options: [
+                    { value: "computer_science", text: "Computer Science / Informatics", category: "science" },
+                    { value: "physics_chem", text: "Physics & Chemistry", category: "science" },
+                    { value: "biology", text: "Biology / Biotechnology", category: "science" },
+                    { value: "accountancy", text: "Accountancy / Business Studies", category: "commerce" },
+                    { value: "economics", text: "Economics / Mathematics", category: "commerce" },
+                    { value: "history_lit", text: "History / Literature / Languages", category: "arts" },
+                    { value: "psychology_soc", text: "Psychology / Sociology / Pol Science", category: "arts" }
+                ]},
+                { id: 3, question: "What’s your dream career?", options: [
+                    { value: "software_dev", text: "Software Developer / Data Scientist", category: "science" },
+                    { value: "doctor", text: "Doctor / Medical Researcher", category: "science" },
+                    { value: "ca", text: "Chartered Accountant / Auditor", category: "commerce" },
+                    { value: "entrepreneur", text: "Startup Founder / Business Owner", category: "commerce" },
+                    { value: "journalist", text: "Journalist / Content Creator", category: "arts" },
+                    { value: "psychologist", text: "Psychologist / Counselor", category: "arts" },
+                    { value: "civil_servant", text: "IAS / Civil Servant", category: "arts" }
+                ]},
+                { id: 4, question: "Which tools do you prefer?", options: [
+                    { value: "laptop_code", text: "Laptop & coding software", category: "science" },
+                    { value: "microscope", text: "Microscope & lab equipment", category: "science" },
+                    { value: "calculator_excel", text: "Calculator & Excel sheets", category: "commerce" },
+                    { value: "pen_notebook", text: "Pen, notebook, and books", category: "arts" }
+                ]},
+                { id: 5, question: "Which college course sounds most interesting?", options: [
+                    { value: "bca", text: "BCA – Computer Applications", category: "science" },
+                    { value: "btech", text: "B.Tech – Engineering", category: "science" },
+                    { value: "bsc_medical", text: "B.Sc – Medical Sciences", category: "science" },
+                    { value: "bcom_hons", text: "B.Com (Hons) – Accounting", category: "commerce" },
+                    { value: "bba", text: "BBA – Business Management", category: "commerce" },
+                    { value: "ba_journalism", text: "B.A. – Journalism", category: "arts" },
+                    { value: "ba_psychology", text: "B.A. – Psychology", category: "arts" }
+                ]},
+                { id: 6, question: "How do you solve problems?", options: [
+                    { value: "logical_code", text: "Write code or use logic", category: "science" },
+                    { value: "experiment", text: "Run experiments or tests", category: "science" },
+                    { value: "analyze_data", text: "Analyze data or financial reports", category: "commerce" },
+                    { value: "discuss", text: "Discuss with people or reflect", category: "arts" }
+                ]},
+                { id: 7, question: "Which environment suits you?", options: [
+                    { value: "tech_office", text: "Tech company or startup", category: "science" },
+                    { value: "hospital_lab", text: "Hospital or research lab", category: "science" },
+                    { value: "corporate", text: "Corporate office or bank", category: "commerce" },
+                    { value: "classroom_media", text: "Classroom, studio, or NGO", category: "arts" }
+                ]},
+                { id: 8, question: "What motivates you?", options: [
+                    { value: "build_tech", text: "Creating new technology", category: "science" },
+                    { value: "help_patients", text: "Helping patients or society", category: "science" },
+                    { value: "earn_money", text: "Financial success & stability", category: "commerce" },
+                    { value: "express_creativity", text: "Expressing ideas or creativity", category: "arts" }
+                ]},
+                { id: 9, question: "Which skill do you want to master?", options: [
+                    { value: "programming", text: "Programming & AI", category: "science" },
+                    { value: "medical_knowledge", text: "Medical or biological knowledge", category: "science" },
+                    { value: "finance", text: "Finance, accounting, or marketing", category: "commerce" },
+                    { value: "communication", text: "Writing, speaking, or counseling", category: "arts" }
+                ]},
+                { id: 10, question: "After graduation, you’d prefer to:", options: [
+                    { value: "join_it", text: "Join an IT company or startup", category: "science" },
+                    { value: "do_msc", text: "Pursue M.Sc or research", category: "science" },
+                    { value: "become_ca", text: "Become CA or join finance", category: "commerce" },
+                    { value: "do_mba", text: "Do MBA after BBA/B.Com", category: "commerce" },
+                    { value: "do_ma", text: "Do M.A. or become a teacher", category: "arts" },
+                    { value: "prepare_upsc", text: "Prepare for UPSC or state exams", category: "arts" }
+                ]}
+            ]
+        };
+
+        // State
+        let userAnswers = {};
+        let userProfile = {};
+        let userStream = null;
+        let currentRecommendedCourses = [];
+
+        // Initialize
+        function init() {
+            // Navigation
+            navHome.addEventListener('click', showHomePage);
+            navCourses.addEventListener('click', showAllCoursesPage);
+            navColleges.addEventListener('click', () => showCollegesPage(userStream, userProfile?.education));
+            navResources.addEventListener('click', showResourcesPage);
+            mobileNavHome.addEventListener('click', () => { toggleMobileMenu(); showHomePage(); });
+            mobileNavCourses.addEventListener('click', () => { toggleMobileMenu(); showAllCoursesPage(); });
+            mobileNavColleges.addEventListener('click', () => { toggleMobileMenu(); showCollegesPage(userStream, userProfile?.education); });
+            mobileNavResources.addEventListener('click', () => { toggleMobileMenu(); showResourcesPage(); });
+            mobileNewAssessment.addEventListener('click', () => { toggleMobileMenu(); resetAssessment(); });
+
+            // Buttons
+            startAssessmentBtn.addEventListener('click', showProfilePage);
+            backToHomeBtn.addEventListener('click', showHomePage);
+            backToProfileBtn.addEventListener('click', showProfilePage);
+            backToHomeFromAllCoursesBtn.addEventListener('click', showHomePage);
+            backToAllCoursesBtn.addEventListener('click', showAllCoursesPage);
+            backToHomeFromResourcesBtn.addEventListener('click', showHomePage);
+            backToHomeFromCollegesBtn.addEventListener('click', showHomePage);
+            backToQuizResultsBtn.addEventListener('click', showQuizResults);
+            newAssessmentBtn.addEventListener('click', resetAssessment);
+            profileForm.addEventListener('submit', handleProfileSubmit);
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            educationInput.addEventListener('change', function() {
+                if (this.value === 'class12') {
+                    streamContainer.classList.remove('hidden');
+                } else {
+                    streamContainer.classList.add('hidden');
+                    streamInput.value = '';
+                }
+            });
+            nameInput.addEventListener('input', validateName);
+            ageInput.addEventListener('input', validateAge);
+            genderInput.addEventListener('change', validateGender);
+            educationInput.addEventListener('change', validateEducation);
+            streamInput.addEventListener('change', validateStream);
+            quizPage.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'submit-quiz') {
+                    submitQuiz();
+                }
+            });
+        }
+
+        function handleProfileSubmit(e) {
+            e.preventDefault();
+            if (validateForm()) {
+                userProfile = {
+                    name: nameInput.value.trim(),
+                    age: parseInt(ageInput.value),
+                    gender: genderInput.value,
+                    education: educationInput.value,
+                    stream: educationInput.value === 'class12' ? streamInput.value : null
+                };
+                userStream = userProfile.stream;
+                showQuizPage();
+            }
+        }
+
+        function showQuizPage() {
+            hideAllPages();
+            quizPage.classList.remove('hidden');
+            quizCompleted.classList.add('hidden');
+            quizContent.classList.remove('hidden');
+            const edu = userProfile.education;
+            const questions = quizQuestions[edu] || quizQuestions.class12;
+            let html = '';
+            questions.forEach(q => {
+                html += `
+                <div class="bg-gradient-to-r from-white to-gray-50 rounded-2xl p-8 shadow-lg border border-gray-100 quiz-question">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold mr-3">${q.id}</div>
+                        <h5 class="text-xl font-bold text-gray-900">${q.question}</h5>
+                    </div>
+                    <div class="space-y-4">
+                        ${q.options.map(opt => `
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-indigo-50 cursor-pointer transition-all duration-300 group">
+                            <input type="radio" name="question${q.id}" class="h-5 w-5 text-primary focus:ring-primary mr-4" value="${opt.value}" data-category="${opt.category}" required>
+                            <span class="text-gray-700 text-lg group-hover:text-primary">${opt.text}</span>
+                        </label>
+                        `).join('')}
+                    </div>
+                </div>
+                `;
+            });
+            html += `
+                <div class="pt-6">
+                    <button id="submit-quiz" class="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 px-8 rounded-2xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl flex items-center justify-center space-x-3">
+                        <span>Submit Quiz & Get Recommendations</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            `;
+            quizContent.innerHTML = html;
+            const radios = quizContent.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => r.addEventListener('change', updateProgress));
+            updateProgress();
+        }
+
+        function processQuizResults() {
+            const categoryCount = { arts: 0, science: 0, commerce: 0 };
+            const subInterests = { tech: 0, medical: 0, business: 0, creative: 0, social: 0 };
+
+            for (const answer of Object.values(userAnswers)) {
+                if (answer && answer.category) {
+                    categoryCount[answer.category]++;
+                }
+                const val = answer?.value;
+                if (val) {
+                    if (['tech','coding','computer','math','it','bca','engineering','software_dev','laptop_code','programming','join_it'].some(k => val.includes(k) || val === k)) {
+                        subInterests.tech++;
+                    }
+                    if (['biology','medical','doctor','health','nursing','zoology','botany','biology_lab','hospital_lab','help_patients','do_msc'].some(k => val.includes(k) || val === k)) {
+                        subInterests.medical++;
+                    }
+                    if (['business','ca','finance','entrepreneur','bba','management','accounting','stock_market','calculator_excel','become_ca','do_mba'].some(k => val.includes(k) || val === k)) {
+                        subInterests.business++;
+                    }
+                    if (['writing','creative','art','design','journalism','media','literature','writing_stories','pen_notebook','express_creativity','ba_journalism'].some(k => val.includes(k) || val === k)) {
+                        subInterests.creative++;
+                    }
+                    if (['social','people','law','psychology','politics','sociology','history','psychologist','civil_servant','prepare_upsc','ba_psychology'].some(k => val.includes(k) || val === k)) {
+                        subInterests.social++;
+                    }
+                }
+            }
+
+            let maxCategory = 'arts';
+            if (categoryCount.science > categoryCount[maxCategory]) maxCategory = 'science';
+            if (categoryCount.commerce > categoryCount[maxCategory]) maxCategory = 'commerce';
+
+            if (!userProfile.stream && userProfile.education === 'class12') {
+                userProfile.stream = maxCategory;
+            }
+            userStream = userProfile.stream || maxCategory;
+            const eduLevel = userProfile.education;
+
+            quizContent.classList.add('hidden');
+            quizCompleted.classList.remove('hidden');
+            quizCompleted.innerHTML = '';
+
+            if (eduLevel === 'class10') {
+                const streamNames = { arts: 'Arts/Humanities', science: 'Science', commerce: 'Commerce' };
+                const streamText = streamNames[maxCategory] || 'General';
+
+                const streamCard = document.createElement('div');
+                streamCard.className = 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-lg border border-indigo-100 mb-8 text-center';
+                streamCard.innerHTML = `
+                    <div class="w-20 h-20 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-primary mb-3">Recommended 11th Stream</h3>
+                    <p class="text-xl text-gray-700 mb-6">Based on your interests, we recommend:</p>
+                    <div class="inline-block bg-white text-indigo-700 px-6 py-3 rounded-full font-bold text-2xl shadow-md border-2 border-primary">
+                        ${streamText}
+                    </div>
+                    <p class="text-gray-600 mt-4">This stream will prepare you for the best career options after 12th.</p>
+                `;
+
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'flex flex-col sm:flex-row gap-4 justify-center mt-8';
+                buttonsDiv.innerHTML = `
+                    <button id="view-junior-colleges" class="bg-gradient-to-r from-primary to-secondary text-white py-3 px-8 rounded-2xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-xl">
+                        View Junior Colleges (11th)
+                    </button>
+                    <button id="retake-quiz" class="bg-gray-200 text-gray-800 py-3 px-8 rounded-2xl font-bold text-lg hover:bg-gray-300 transition-all">
+                        Retake Quiz
+                    </button>
+                `;
+
+                quizCompleted.appendChild(streamCard);
+                quizCompleted.appendChild(buttonsDiv);
+
+                document.getElementById('view-junior-colleges').onclick = () => showCollegesPage(maxCategory, 'class10');
+                document.getElementById('retake-quiz').onclick = () => {
+                    userAnswers = {};
+                    showQuizPage();
+                };
+
+            } else if (eduLevel === 'class12') {
+                let recommendedCourses = [];
+                if (maxCategory === 'science') {
+                    if (subInterests.tech >= subInterests.medical) {
+                        recommendedCourses = ["BCA", "B.Sc Computer Science"];
+                    } else {
+                        recommendedCourses = ["B.Sc Medical"];
+                    }
+                } else if (maxCategory === 'commerce') {
+                    if (subInterests.business >= 2) {
+                        recommendedCourses = ["B.Com (Hons)", "BBA"];
+                    } else {
+                        recommendedCourses = ["B.Com (Hons)"];
+                    }
+                } else if (maxCategory === 'arts') {
+                    if (subInterests.creative >= subInterests.social) {
+                        recommendedCourses = ["B.A. Journalism"];
+                    } else {
+                        recommendedCourses = ["B.A. Psychology"];
+                    }
+                }
+
+                currentRecommendedCourses = recommendedCourses;
+                showRecommendedCourses(recommendedCourses);
+            }
+        }
+
+        function showRecommendedCourses(courses) {
+            let html = '';
+            courses.forEach(courseName => {
+                const course = courseData[courseName];
+                html += `
+                    <div class="bg-white rounded-3xl shadow-xl card-hover">
+                        <div class="p-8">
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4">${courseName}</h4>
+                            <p class="text-gray-600 mb-6">${course.description}</p>
+                            <div class="mb-6">
+                                <h5 class="font-bold text-gray-900 mb-3 text-lg">Sample Syllabus:</h5>
+                                <div class="flex flex-wrap gap-1">
+                                    ${course.syllabus.map(item => `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${item}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mb-6">
+                                <span class="text-lg text-gray-500 font-medium">Duration: ${course.duration}</span>
+                                <span class="text-lg font-bold text-green-600">Colleges: ${course.colleges}+</span>
+                            </div>
+                            <div class="pt-4 border-t border-gray-100">
+                                <button onclick="showCourseDetail('${courseName}')" class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                    View Course Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            recommendedCoursesList.innerHTML = html;
+            hideAllPages();
+            recommendedCoursesPage.classList.remove('hidden');
+        }
+
+        function showCollegesPage(stream = null, education = null) {
+            hideAllPages();
+            collegesPage.classList.remove('hidden');
+            const eduLevel = education || (userProfile ? userProfile.education : null);
+            const userStr = stream || (userProfile ? userProfile.stream : null);
+            const heading = document.getElementById('colleges-heading');
+            const subheading = document.getElementById('colleges-subheading');
+            let collegesToShow = [];
+
+            if (eduLevel === 'class10') {
+                heading.textContent = "Junior Colleges in J&K (After 10th)";
+                subheading.textContent = "These colleges offer 11th and 12th standard with your selected stream.";
+                if (userStr && collegeDatabase.junior[userStr]) {
+                    collegesToShow = collegeDatabase.junior[userStr];
+                } else {
+                    Object.values(collegeDatabase.junior).forEach(list => collegesToShow.push(...list));
+                }
+            } else {
+                heading.textContent = "Degree Colleges in J&K (After 12th)";
+                subheading.textContent = "Bachelor's degree programs in your recommended stream.";
+                if (userStr && collegeDatabase.degree[userStr]) {
+                    collegesToShow = collegeDatabase.degree[userStr];
+                } else {
+                    Object.values(collegeDatabase.degree).forEach(list => collegesToShow.push(...list));
+                }
+            }
+
+            collegesGrid.innerHTML = '';
+            collegesToShow.forEach(college => {
+                const isJunior = eduLevel === 'class10';
+                const streamLabel = userStr || 'general';
+                const bgColor = streamLabel === 'science' ? 'from-green-500 to-emerald-600' :
+                               streamLabel === 'commerce' ? 'from-orange-500 to-red-600' : 'from-purple-500 to-pink-600';
+                const items = isJunior ? college.subjects : college.courses;
+                const itemLabel = isJunior ? 'Subjects' : 'Courses';
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-3xl shadow-xl card-hover";
+                card.innerHTML = `
+                    <div class="relative overflow-hidden">
+                        <img src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=${encodeURIComponent(college.name)}" alt="${college.name}" class="w-full h-64 object-cover">
+                        <div class="absolute top-6 right-6">
+                            <span class="px-4 py-2 rounded-full text-sm font-bold text-white bg-gradient-to-r ${bgColor}">
+                                ${streamLabel.charAt(0).toUpperCase() + streamLabel.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">${college.name}</h4>
+                        <p class="text-gray-600 mb-2">${college.location}</p>
+                        <div class="mb-3">
+                            <h5 class="font-bold text-gray-900 mb-2 text-lg">${itemLabel} Offered:</h5>
+                            <div class="flex flex-wrap gap-1">
+                                ${items.map(item => `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${item}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-3">
+                            <span class="text-gray-500">Cutoff: ${college.cutoff}</span>
+                            <span class="text-green-600 font-bold">${isJunior ? '11th–12th' : 'Degree'}</span>
+                        </div>
+                        <button class="mt-4 w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-3 px-4 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                            ${isJunior ? 'View Admission (11th)' : 'Check Admission'}
+                        </button>
+                    </div>
+                `;
+                collegesGrid.appendChild(card);
+            });
+        }
+
+        function showAllCoursesPage() {
+            hideAllPages();
+            allCoursesPage.classList.remove('hidden');
+        }
+
+        function showCourseDetail(courseName) {
+            const course = courseData[courseName];
+            if (!course) return;
+
+            const content = `
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">${courseName}</h2>
+                    <p class="text-gray-600 text-lg mb-6">${course.description}</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-blue-50 p-6 rounded-2xl">
+                            <h3 class="font-bold text-lg text-primary mb-3">Key Details</h3>
+                            <p><strong>Duration:</strong> ${course.duration}</p>
+                            <p><strong>Colleges Offering:</strong> ${course.colleges}+</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-2xl">
+                            <h3 class="font-bold text-lg text-accent mb-3">Career Paths</h3>
+                            <ul class="list-disc pl-5 text-gray-700">
+                                ${course.careerPaths.map(cp => `<li>${cp}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Sample Syllabus</h3>
+                        <div class="flex flex-wrap gap-2">
+                            ${course.syllabus.map(sub => `<span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">${sub}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button id="download-pdf-btn" class="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-8 rounded-2xl font-bold flex items-center">
+                            <i class="fas fa-file-pdf mr-2"></i> Download Course Info (PDF)
+                        </button>
+                        <button id="view-colleges-from-course" class="bg-gradient-to-r from-primary to-secondary text-white py-3 px-8 rounded-2xl font-bold">
+                            View Colleges
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('course-detail-content').innerHTML = content;
+            hideAllPages();
+            courseDetailPage.classList.remove('hidden');
+
+            document.getElementById('download-pdf-btn').onclick = () => downloadCoursePDF(courseName, course);
+            document.getElementById('view-colleges-from-course').onclick = () => showCollegesPage(course.stream, 'class12');
+        }
+
+        function downloadCoursePDF(name, course) {
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.text("COURSE2CAREER - Course Guide", 14, 20);
+            doc.setFontSize(16);
+            doc.text(name, 14, 35);
+            doc.setFontSize(12);
+            let y = 45;
+            doc.text(`Duration: ${course.duration}`, 14, y); y += 8;
+            doc.text(`Colleges: ${course.colleges}+`, 14, y); y += 12;
+            doc.text("Description:", 14, y); y += 6;
+            const descLines = doc.splitTextToSize(course.description, 180);
+            doc.text(descLines, 14, y); y += descLines.length * 7 + 10;
+            doc.text("Career Paths:", 14, y); y += 6;
+            course.careerPaths.forEach(cp => {
+                doc.text(`• ${cp}`, 14, y); y += 7;
+            });
+            y += 10;
+            doc.text("Sample Syllabus:", 14, y); y += 6;
+            course.syllabus.forEach(sub => {
+                doc.text(`• ${sub}`, 14, y); y += 7;
+            });
+            doc.save(`${name.replace(/[^a-z0-9]/gi, '_')}_guide.pdf`);
+        }
+
+        function showQuizResults() {
+            hideAllPages();
+            quizPage.classList.remove('hidden');
+            quizCompleted.classList.remove('hidden');
+        }
+
+        // Utility Functions
+        function showHomePage() {
+            hideAllPages();
+            homePage.classList.remove('hidden');
+        }
+        function showProfilePage() {
+            hideAllPages();
+            profilePage.classList.remove('hidden');
+        }
+        function showResourcesPage() {
+            hideAllPages();
+            resourcesPage.classList.remove('hidden');
+        }
+        function hideAllPages() {
+            [homePage, profilePage, quizPage, recommendedCoursesPage, allCoursesPage, courseDetailPage, resourcesPage, collegesPage].forEach(p => p.classList.add('hidden'));
+        }
+        function validateForm() {
+            return validateName() && validateAge() && validateGender() && validateEducation() &&
+                   (educationInput.value !== 'class12' || validateStream());
+        }
+        function validateName() {
+            const valid = nameInput.value.trim().length >= 2;
+            nameError.classList.toggle('hidden', valid);
+            return valid;
+        }
+        function validateAge() {
+            const age = parseInt(ageInput.value);
+            const valid = !isNaN(age) && age >= 13 && age <= 30;
+            ageError.classList.toggle('hidden', valid);
+            return valid;
+        }
+        function validateGender() {
+            const valid = genderInput.value !== "";
+            genderError.classList.toggle('hidden', valid);
+            return valid;
+        }
+        function validateEducation() {
+            const valid = educationInput.value !== "";
+            educationError.classList.toggle('hidden', valid);
+            return valid;
+        }
+        function validateStream() {
+            const valid = educationInput.value !== 'class12' || streamInput.value !== "";
+            streamError.classList.toggle('hidden', valid);
+            return valid;
+        }
+        function updateProgress() {
+            const total = 10;
+            let answered = 0;
+            for (let i = 1; i <= total; i++) {
+                const selected = document.querySelector(`input[name="question${i}"]:checked`);
+                if (selected) {
+                    answered++;
+                    userAnswers[i] = { value: selected.value, category: selected.dataset.category };
+                }
+            }
+            progressBar.style.width = `${(answered / total) * 100}%`;
+            progressText.textContent = `${answered}/${total} questions answered`;
+        }
+        function submitQuiz() {
+            const total = 10;
+            let allAnswered = true;
+            for (let i = 1; i <= total; i++) {
+                if (!document.querySelector(`input[name="question${i}"]:checked`)) {
+                    allAnswered = false;
+                    break;
+                }
+            }
+            if (!allAnswered) {
+                alert("Please answer all questions before submitting.");
+                return;
+            }
+            processQuizResults();
+        }
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('open');
+        }
+        function resetAssessment() {
+            profileForm.reset();
+            [nameError, ageError, genderError, educationError, streamError].forEach(e => e.classList.add('hidden'));
+            streamContainer.classList.add('hidden');
+            userAnswers = {};
+            userStream = null;
+            showHomePage();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
